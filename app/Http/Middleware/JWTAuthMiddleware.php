@@ -27,6 +27,9 @@ class JWTAuthMiddleware
 
        try{
         $decode = JWT::decode($token, new Key($key, 'HS256'));
+        if($request-> is('api/me')){
+            return response()->json($decode);
+        }
         return $next($request);
        }
        catch (\Exception $ex) {

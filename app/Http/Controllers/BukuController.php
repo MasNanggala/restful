@@ -6,11 +6,25 @@ use Illuminate\Support\Facades\DB;
 class BukuController extends Controller
 {
     public function getBuku(){
-        $data = DB::table('mst_buku')->get();
+        $search = request()->input('search','');
+        $sort = request()->input('sort','id');
+        $isasc = request()->input('isasc', 'true');
+        $page = request()->input('page',1);
+        $size = request()->input('size',5);
+        $data = DB::table('mst_buku')
+                ->where('nama_buku', 'LIKE',"%$search%")
+                ->orwhere('pengarang', 'LIKE',"%$search%")
+                ->orwhere('jns_buku', 'LIKE',"%$search%")
+                ->orwhere('desc_buku', 'LIKE',"%$search%");
+        $data=$isasc=='true' ? $data->orderBy($sort) : $data->orderByDesc($sort);
+        $count = $data->count();
+        $data = $data->skip($page * $size - $size)->limit($size);
         return[
             "status" => 200,
             "success" => true,
-            "data" => $data,
+            "data" => $data->get(),
+            'totalRows' => $count,
+            'totalPage' => ceil($count / $size)
         ];
     }
 
@@ -33,7 +47,7 @@ class BukuController extends Controller
             'nama_buku' => $data['nama_buku'],
             'tahun_buku' => $data['tahun_buku'],
             'pengarang' => $data['pengarang'],
-            'id_jns_buku' => $data['id_jns_buku'],
+            'jns_buku' => $data['jns_buku'],
             'desc_buku' => $data['desc_buku'],
         ];
         try{
@@ -61,7 +75,7 @@ class BukuController extends Controller
             'nama_buku' => $data['nama_buku'],
             'tahun_buku' => $data['tahun_buku'],
             'pengarang' => $data['pengarang'],
-            'id_jns_buku' => $data['id_jns_buku'],
+            'jns_buku' => $data['jns_buku'],
             'desc_buku' => $data['desc_buku'],
         ];
         try{
